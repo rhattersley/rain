@@ -86,10 +86,10 @@ body,
   position: absolute;
   top: 8px;
   bottom: 8px;
-  width: 2px;
+  width: 3px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--needle);
+  background: #ff2a2a;
   border-radius: 2px;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.6);
 }
