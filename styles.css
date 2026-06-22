@@ -1,0 +1,104 @@
+:root {
+  --surface: rgba(255, 255, 255, 0.9);
+  --surface-border: rgba(16, 25, 45, 0.18);
+  --text: #0f1a2a;
+  --needle: #08111e;
+  --tick: #22354f;
+  --tick-soft: rgba(34, 53, 79, 0.35);
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app,
+#map {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  color: var(--text);
+  background: #dbe7ef;
+}
+
+.leaflet-control-container {
+  display: none;
+}
+
+#timeline {
+  position: fixed;
+  left: 10px;
+  right: 10px;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  z-index: 1000;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+  padding: 8px 10px 10px;
+}
+
+#timelineHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+#status {
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#timeLabel {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+#slider {
+  position: relative;
+  width: 100%;
+  height: 72px;
+  touch-action: none;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(245, 250, 255, 0.85));
+  border: 1px solid rgba(8, 17, 30, 0.12);
+  overflow: hidden;
+}
+
+#ruler {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#centerNeedle {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--needle);
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+@media (min-width: 700px) {
+  #timeline {
+    left: 50%;
+    right: auto;
+    width: min(760px, calc(100vw - 24px));
+    transform: translateX(-50%);
+  }
+}

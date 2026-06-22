@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <title>Rainfall Map</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app">
+    <div id="map" aria-label="Rainfall map"></div>
+
+    <section id="timeline" aria-label="Time slider">
+      <div id="timelineHeader">
+        <span id="status">Loading latest run...</span>
+        <time id="timeLabel" datetime=""></time>
+      </div>
+      <div id="slider" role="slider" aria-valuemin="0" aria-valuemax="120" aria-valuenow="0" aria-label="Rainfall time slider" tabindex="0">
+        <canvas id="ruler"></canvas>
+        <div id="centerNeedle" aria-hidden="true"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>
