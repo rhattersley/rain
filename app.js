@@ -295,7 +295,7 @@
         ctx.fillStyle = "#10233a";
         ctx.font = "600 12px IBM Plex Sans, Segoe UI, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(`${hh}:00`, x, height - 16);
+        ctx.fillText(hh, x, height - 16);
       }
     }
 
