@@ -52,11 +52,28 @@ body,
   margin-bottom: 6px;
 }
 
-#status {
-  opacity: 0.7;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+#resetNow {
+  appearance: none;
+  border: 1px solid rgba(16, 25, 45, 0.25);
+  background: rgba(255, 255, 255, 0.72);
+  color: #10233a;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
+}
+
+#resetNow:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(16, 25, 45, 0.4);
+}
+
+#resetNow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 #timeLabel {

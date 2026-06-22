@@ -33,7 +33,7 @@
   const slider = document.getElementById("slider");
   const ruler = document.getElementById("ruler");
   const timeLabel = document.getElementById("timeLabel");
-  const status = document.getElementById("status");
+  const resetNowButton = document.getElementById("resetNow");
 
   const state = {
     availability: new Map(),
@@ -316,11 +316,6 @@
     slider.setAttribute("aria-valuenow", String(idx < 0 ? 0 : idx));
     slider.setAttribute("aria-valuemax", String(Math.max(0, state.availableTimes.length - 1)));
 
-    const selected = state.availability.get(state.selectedTimeMs);
-    if (selected) {
-      const sourceLabel = selected.source === "ob" ? "Observation" : `Forecast ${selected.source.replace("fc-", "")}`;
-      status.textContent = `${sourceLabel} run ${selected.runIso}`;
-    }
   }
 
   async function renderRainfall() {
@@ -449,6 +444,12 @@
     }
   });
 
+  resetNowButton.addEventListener("click", () => {
+    stopMomentum();
+    state.velocityPxPerMs = 0;
+    setSelectedTime(Date.now());
+  });
+
   window.addEventListener("resize", () => {
     updatePxPerHour();
     state.viewStartMs = clampViewStart(state.selectedTimeMs - 6 * HOUR_MS);
@@ -457,7 +458,7 @@
 
   async function init() {
     updatePxPerHour();
-    status.textContent = "Loading live rainfall availability...";
+    resetNowButton.disabled = true;
     state.availability = await loadAvailability();
     state.availableTimes = Array.from(state.availability.keys()).sort((a, b) => a - b);
 
@@ -466,9 +467,11 @@
     }
 
     setSelectedTime(Date.now());
+    resetNowButton.disabled = false;
   }
 
   init().catch(() => {
-    status.textContent = "Rainfall source unavailable";
+    resetNowButton.disabled = true;
+    timeLabel.textContent = "Rainfall source unavailable";
   });
 })();
