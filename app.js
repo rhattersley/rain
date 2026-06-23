@@ -7,6 +7,12 @@
   const MAP_BOUNDS = L.latLngBounds([44, -25], [64, 16]);
   const HOUR_MS = 60 * 60 * 1000;
   const QUARTER_HOUR_MS = 15 * 60 * 1000;
+  const TICK_COLOR_MAJOR = "#22354f";
+  const TICK_COLOR_MINOR = "rgba(34,53,79,0.35)";
+  const TICK_COLOR_OB_MAJOR = "#a7adb4";
+  const TICK_COLOR_OB_MINOR = "rgba(175, 183, 194, 0.45)";
+  const LABEL_COLOR = "#10233a";
+  const LABEL_COLOR_OB = "#b6bcc4";
 
   const map = L.map("map", {
     zoomControl: false,
@@ -275,14 +281,29 @@
     const startMs = state.viewStartMs;
     const endMs = startMs + 12 * HOUR_MS;
     const firstTickMs = Math.floor(startMs / QUARTER_HOUR_MS) * QUARTER_HOUR_MS;
+    const minAvailableMs = state.availableTimes[0];
+    const maxAvailableMs = state.availableTimes[state.availableTimes.length - 1];
+    const minScrollableMs = minAvailableMs + 6 * HOUR_MS;
+    const maxScrollableMs = maxAvailableMs - 6 * HOUR_MS;
+    const hasScrollableSpan = minScrollableMs <= maxScrollableMs;
 
     for (let t = firstTickMs; t <= endMs + QUARTER_HOUR_MS; t += QUARTER_HOUR_MS) {
       const x = ((t - startMs) / HOUR_MS) * state.pxPerHour;
+      const outOfDataRange = t < minAvailableMs || t > maxAvailableMs;
+      const outOfScrollableRange = hasScrollableSpan && (t < minScrollableMs || t > maxScrollableMs);
+
+      if (x < 0 || x > width || outOfDataRange || outOfScrollableRange) {
+        continue;
+      }
+
+      const isObservation = state.availability.get(t)?.source === "ob";
       const quarter = Math.floor((t / QUARTER_HOUR_MS) % 4 + 4) % 4;
       const major = quarter === 0;
       const half = quarter === 2;
       const yTop = major ? 10 : half ? 18 : 25;
-      ctx.strokeStyle = major ? "#22354f" : "rgba(34,53,79,0.35)";
+      ctx.strokeStyle = major
+        ? (isObservation ? TICK_COLOR_OB_MAJOR : TICK_COLOR_MAJOR)
+        : (isObservation ? TICK_COLOR_OB_MINOR : TICK_COLOR_MINOR);
       ctx.lineWidth = major ? 1.5 : 1;
       ctx.beginPath();
       ctx.moveTo(x, yTop);
@@ -292,7 +313,7 @@
       if (major) {
         const dt = new Date(t);
         const hh = String(dt.getUTCHours()).padStart(2, "0");
-        ctx.fillStyle = "#10233a";
+        ctx.fillStyle = isObservation ? LABEL_COLOR_OB : LABEL_COLOR;
         ctx.font = "600 12px IBM Plex Sans, Segoe UI, sans-serif";
         ctx.textAlign = "center";
         ctx.fillText(hh, x, height - 16);
