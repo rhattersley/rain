@@ -4,7 +4,7 @@
   const WMS_OB_BASE = "https://maps.consumer-digital.api.metoffice.gov.uk/wms_ob/single/high-res";
   const RAINFALL_LAYER = "total_precipitation_rate";
   const RAINFALL_OB_LAYER = "rainfall_radar";
-  const MAP_BOUNDS = L.latLngBounds([40, -25], [64, 16]);
+  const IMAGE_BOUNDS = L.latLngBounds([44, -25], [64, 16]);
   const HOUR_MS = 60 * 60 * 1000;
   const QUARTER_HOUR_MS = 15 * 60 * 1000;
   const PLAYBACK_HOURS_PER_SECOND = 3;
@@ -373,7 +373,7 @@
     const url = selected.url;
 
     if (!state.overlay) {
-      state.overlay = L.imageOverlay(url, MAP_BOUNDS);
+      state.overlay = L.imageOverlay(url, IMAGE_BOUNDS);
       state.overlay.addTo(map);
     } else {
       state.overlay.setUrl(url);
