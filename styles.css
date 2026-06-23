@@ -74,7 +74,14 @@ body,
   margin-bottom: 6px;
 }
 
-#resetNow {
+#timeControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#resetNow,
+#playPause {
   appearance: none;
   border: 1px solid rgba(16, 25, 45, 0.25);
   background: rgba(255, 255, 255, 0.72);
@@ -88,12 +95,23 @@ body,
   transition: background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
 }
 
-#resetNow:hover {
+#playPause {
+  width: 4em;
+}
+
+#resetNow:hover,
+#playPause:hover {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(16, 25, 45, 0.4);
 }
 
-#resetNow:disabled {
+#playPause[aria-pressed="true"] {
+  background: rgba(220, 242, 255, 1);
+  border-color: rgba(18, 94, 150, 0.55);
+}
+
+#resetNow:disabled,
+#playPause:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

@@ -13,7 +13,10 @@
     <p id="attribution">© Met Office | © OpenStreetMap</p>
     <section id="timeline" aria-label="Time slider">
       <div id="timelineHeader">
-        <button id="resetNow" type="button">Reset to now</button>
+        <div id="timeControls">
+          <button id="resetNow" type="button">Reset to now</button>
+          <button id="playPause" type="button" aria-pressed="false" aria-label="Play playback">&#9654;</button>
+        </div>
         <time id="timeLabel" datetime=""></time>
       </div>
       <div id="slider" role="slider" aria-valuemin="0" aria-valuemax="120" aria-valuenow="0" aria-label="Rainfall time slider" tabindex="0">

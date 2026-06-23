@@ -7,6 +7,7 @@
   const MAP_BOUNDS = L.latLngBounds([40, -25], [64, 16]);
   const HOUR_MS = 60 * 60 * 1000;
   const QUARTER_HOUR_MS = 15 * 60 * 1000;
+  const PLAYBACK_HOURS_PER_SECOND = 3;
   const TICK_COLOR_MAJOR = "#22354f";
   const TICK_COLOR_MINOR = "rgba(34,53,79,0.35)";
   const TICK_COLOR_OB_MAJOR = "#a7adb4";
@@ -38,6 +39,7 @@
   const ruler = document.getElementById("ruler");
   const timeLabel = document.getElementById("timeLabel");
   const resetNowButton = document.getElementById("resetNow");
+  const playPauseButton = document.getElementById("playPause");
 
   const state = {
     availability: new Map(),
@@ -56,8 +58,18 @@
     renderToken: 0,
     prefetchHandle: 0,
     prefetchToken: 0,
-    imageCache: new Map()
+    imageCache: new Map(),
+    isPlaying: false,
+    playbackHandle: 0,
+    playbackLastFrameMs: 0,
+    playbackCursorMs: 0
   };
+
+  function updatePlayPauseButton() {
+    playPauseButton.textContent = state.isPlaying ? "\u275A\u275A" : "\u25B6";
+    playPauseButton.setAttribute("aria-label", state.isPlaying ? "Pause playback" : "Play playback");
+    playPauseButton.setAttribute("aria-pressed", String(state.isPlaying));
+  }
 
   function parseIsoDurationToMs(value) {
     if (!value || value === "PT0S") {
@@ -190,6 +202,9 @@
   function setSelectedTime(timeMs) {
     const chosen = nearestAvailableTime(timeMs);
     state.selectedTimeMs = chosen;
+    if (!state.isPlaying) {
+      state.playbackCursorMs = chosen;
+    }
     state.viewStartMs = clampViewStart(chosen - 6 * HOUR_MS);
     queueOverlayUpdate();
     queueBackgroundPrefetch();
@@ -374,6 +389,61 @@
     }
   }
 
+  function stopPlayback() {
+    if (state.playbackHandle) {
+      cancelAnimationFrame(state.playbackHandle);
+      state.playbackHandle = 0;
+    }
+    state.isPlaying = false;
+    updatePlayPauseButton();
+  }
+
+  function startPlayback() {
+    if (!state.availableTimes.length) {
+      return;
+    }
+
+    stopMomentum();
+    state.velocityPxPerMs = 0;
+    state.isPlaying = true;
+    state.playbackCursorMs = state.selectedTimeMs;
+    state.playbackLastFrameMs = performance.now();
+    updatePlayPauseButton();
+
+    const maxAvailable = state.availableTimes[state.availableTimes.length - 1];
+
+    function step(now) {
+      if (!state.isPlaying) {
+        state.playbackHandle = 0;
+        return;
+      }
+
+      const dtMs = now - state.playbackLastFrameMs;
+      state.playbackLastFrameMs = now;
+      state.playbackCursorMs += (dtMs * PLAYBACK_HOURS_PER_SECOND * HOUR_MS) / 1000;
+
+      if (state.playbackCursorMs >= maxAvailable) {
+        state.playbackCursorMs = maxAvailable;
+        setSelectedTime(state.playbackCursorMs);
+        stopPlayback();
+        return;
+      }
+
+      setSelectedTime(state.playbackCursorMs);
+      state.playbackHandle = requestAnimationFrame(step);
+    }
+
+    state.playbackHandle = requestAnimationFrame(step);
+  }
+
+  function togglePlayback() {
+    if (state.isPlaying) {
+      stopPlayback();
+    } else {
+      startPlayback();
+    }
+  }
+
   function startMomentum() {
     stopMomentum();
     const friction = 0.0032;
@@ -398,6 +468,7 @@
   }
 
   slider.addEventListener("pointerdown", (ev) => {
+    stopPlayback();
     state.dragging = true;
     state.pointerId = ev.pointerId;
     state.lastX = ev.clientX;
@@ -433,6 +504,7 @@
   slider.addEventListener("pointercancel", releasePointer);
 
   slider.addEventListener("keydown", (ev) => {
+    stopPlayback();
     if (ev.key === "ArrowRight") {
       const idx = state.availableTimes.indexOf(state.selectedTimeMs);
       const nextIdx = Math.min(state.availableTimes.length - 1, idx + 1);
@@ -464,9 +536,14 @@
   });
 
   resetNowButton.addEventListener("click", () => {
+    stopPlayback();
     stopMomentum();
     state.velocityPxPerMs = 0;
     setSelectedTime(Date.now());
+  });
+
+  playPauseButton.addEventListener("click", () => {
+    togglePlayback();
   });
 
   window.addEventListener("resize", () => {
@@ -478,6 +555,8 @@
   async function init() {
     updatePxPerHour();
     resetNowButton.disabled = true;
+    playPauseButton.disabled = true;
+    updatePlayPauseButton();
     state.availability = await loadAvailability();
     state.availableTimes = Array.from(state.availability.keys()).sort((a, b) => a - b);
 
@@ -487,10 +566,12 @@
 
     setSelectedTime(Date.now());
     resetNowButton.disabled = false;
+    playPauseButton.disabled = false;
   }
 
   init().catch(() => {
     resetNowButton.disabled = true;
+    playPauseButton.disabled = true;
     timeLabel.textContent = "Rainfall source unavailable";
   });
 })();
