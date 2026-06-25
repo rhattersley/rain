@@ -8,6 +8,7 @@
   const HOUR_MS = 60 * 60 * 1000;
   const QUARTER_HOUR_MS = 15 * 60 * 1000;
   const PLAYBACK_HOURS_PER_SECOND = 3;
+  const TIMELINE_EXTRA_END_HOURS = 6;
   const TICK_COLOR_MAJOR = "#22354f";
   const TICK_COLOR_MINOR = "rgba(34,53,79,0.35)";
   const TICK_COLOR_OB_MAJOR = "#a7adb4";
@@ -169,7 +170,10 @@
       return ms;
     }
     const min = state.availableTimes[0];
-    const max = Math.max(min, state.availableTimes[state.availableTimes.length - 1] - 12 * HOUR_MS);
+    const max = Math.max(
+      min,
+      state.availableTimes[state.availableTimes.length - 1] - (12 - TIMELINE_EXTRA_END_HOURS) * HOUR_MS
+    );
     return Math.min(max, Math.max(min, ms));
   }
 
@@ -297,7 +301,7 @@
     const minAvailableMs = state.availableTimes[0];
     const maxAvailableMs = state.availableTimes[state.availableTimes.length - 1];
     const minScrollableMs = minAvailableMs + 6 * HOUR_MS;
-    const maxScrollableMs = maxAvailableMs - 6 * HOUR_MS;
+    const maxScrollableMs = maxAvailableMs;
     const hasScrollableSpan = minScrollableMs <= maxScrollableMs;
 
     for (let t = firstTickMs; t <= endMs + QUARTER_HOUR_MS; t += QUARTER_HOUR_MS) {
