@@ -45,6 +45,7 @@
   const state = {
     availability: new Map(),
     availableTimes: [],
+    cursorTimeMs: 0,
     selectedTimeMs: 0,
     viewStartMs: 0,
     pxPerHour: 1,
@@ -203,13 +204,24 @@
     return Math.abs(targetMs - left) <= Math.abs(right - targetMs) ? left : right;
   }
 
+  function clampToAvailableRange(timeMs) {
+    if (!state.availableTimes.length) {
+      return timeMs;
+    }
+    const min = state.availableTimes[0];
+    const max = state.availableTimes[state.availableTimes.length - 1];
+    return Math.min(max, Math.max(min, timeMs));
+  }
+
   function setSelectedTime(timeMs) {
-    const chosen = nearestAvailableTime(timeMs);
+    const cursor = clampToAvailableRange(timeMs);
+    const chosen = nearestAvailableTime(cursor);
+    state.cursorTimeMs = cursor;
     state.selectedTimeMs = chosen;
     if (!state.isPlaying) {
-      state.playbackCursorMs = chosen;
+      state.playbackCursorMs = cursor;
     }
-    state.viewStartMs = clampViewStart(chosen - 6 * HOUR_MS);
+    state.viewStartMs = clampViewStart(cursor - 6 * HOUR_MS);
     queueOverlayUpdate();
     queueBackgroundPrefetch();
     drawRuler();
@@ -218,7 +230,8 @@
   function updateFromDrag(deltaPx) {
     const deltaMs = (deltaPx / state.pxPerHour) * HOUR_MS;
     state.viewStartMs = clampViewStart(state.viewStartMs - deltaMs);
-    const centerMs = state.viewStartMs + 6 * HOUR_MS;
+    const centerMs = clampToAvailableRange(state.viewStartMs + 6 * HOUR_MS);
+    state.cursorTimeMs = centerMs;
     state.selectedTimeMs = nearestAvailableTime(centerMs);
     queueOverlayUpdate();
     queueBackgroundPrefetch();
@@ -410,7 +423,7 @@
     stopMomentum();
     state.velocityPxPerMs = 0;
     state.isPlaying = true;
-    state.playbackCursorMs = state.selectedTimeMs;
+    state.playbackCursorMs = state.cursorTimeMs || state.selectedTimeMs;
     state.playbackLastFrameMs = performance.now();
     updatePlayPauseButton();
 
