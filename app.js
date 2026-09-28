@@ -309,22 +309,31 @@
 
     const token = ++state.prefetchToken;
 
-    for (let index = startIndex; index < state.availableTimes.length; index += 1) {
-      if (token !== state.prefetchToken) {
-        return;
-      }
+    // Helper to prefetch a range of indices
+    const prefetchRange = async (start, end, step) => {
+      for (let index = start; step > 0 ? index < end : index >= end; index += step) {
+        if (token !== state.prefetchToken) {
+          return;
+        }
 
-      const entry = state.availability.get(state.availableTimes[index]);
-      if (!entry) {
-        continue;
-      }
+        const entry = state.availability.get(state.availableTimes[index]);
+        if (!entry) {
+          continue;
+        }
 
-      try {
-        await ensureImageDownloaded(entry.url);
-      } catch {
-        // Ignore individual image failures and keep advancing through the queue.
+        try {
+          await ensureImageDownloaded(entry.url);
+        } catch {
+          // Ignore individual image failures and keep advancing through the queue.
+        }
       }
-    }
+    };
+
+    // Forward prefetch
+    await prefetchRange(startIndex, state.availableTimes.length, 1);
+
+    // Backward prefetch from before current time
+    await prefetchRange(startIndex - 1, Math.max(0, startIndex - 60), -1);
   }
 
   function drawRuler() {
