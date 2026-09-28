@@ -34,7 +34,36 @@
     opacity: 0.85
   }).addTo(map);
 
-  map.fitBounds(L.latLngBounds([48, -12], [60, 1.5]));
+  // Restore map state from localStorage or use default bounds
+  function restoreMapState() {
+    try {
+      const saved = localStorage.getItem("rainfallMapState");
+      if (saved) {
+        const state = JSON.parse(saved);
+        map.setView(state.center, state.zoom);
+        return;
+      }
+    } catch {
+      // Ignore parsing errors and fall back to default
+    }
+    map.fitBounds(L.latLngBounds([48, -12], [60, 1.5]));
+  }
+
+  function saveMapState() {
+    const state = {
+      center: map.getCenter(),
+      zoom: map.getZoom()
+    };
+    try {
+      localStorage.setItem("rainfallMapState", JSON.stringify(state));
+    } catch {
+      // Ignore storage errors (e.g., quota exceeded, private mode)
+    }
+  }
+
+  restoreMapState();
+  map.on("moveend", saveMapState);
+  map.on("zoomend", saveMapState);
 
   const slider = document.getElementById("slider");
   const ruler = document.getElementById("ruler");
